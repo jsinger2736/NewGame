@@ -5,11 +5,12 @@ import javax.swing.*;
 
 public class NewGame extends JFrame{
  JMenuBar menubar;
- JMenu file;
- JMenuItem exit;
+ JMenu file, options;
+ JMenuItem exit, allychoice;
  JLabel statusbar;
  Board board;
  MenuHandler menuhandler;
+ int allyChoice = 0;
  
  public NewGame(){
   menubar = new JMenuBar();
@@ -19,12 +20,17 @@ public class NewGame extends JFrame{
   exit.addActionListener(menuhandler);
   file.add(exit);
   menubar.add(file);
+  options = new JMenu("Options");
+  allychoice = new JMenuItem("Choice of Ally");
+  allychoice.addActionListener(menuhandler);
+  options.add(allychoice);
+  menubar.add(options);
   statusbar = new JLabel("statusbar", SwingConstants.CENTER);
   add(statusbar, BorderLayout.SOUTH);
   board = new Board(this);
   add(board);
   setJMenuBar(menubar);
-  setSize(board.boardWidth*20,board.boardHeight*20+30);
+  setSize(board.boardWidth*21,board.boardHeight*21+30);
   setTitle("NewGame");
   setDefaultCloseOperation(EXIT_ON_CLOSE);
  }
@@ -45,6 +51,26 @@ public class NewGame extends JFrame{
    Object source = e.getSource();
    if (source==exit){
     System.exit(0);
+   }
+   if (source==allychoice){
+    if (!board.isPaused){
+     board.pause();
+    }
+    Object[] list = new Object[2];
+    list[0]="Wall";
+    list[1]="FootSoldier";
+    try{
+     String choice = JOptionPane.showInputDialog(null,"Choose the ally you'd like to spawn.","Choice of Ally",JOptionPane.PLAIN_MESSAGE,null,list,list[allyChoice]).toString();
+     allyChoice = Mob.allyIdentifier(choice);
+     if (board.isPaused){
+      board.pause();
+     }
+    } catch (Exception exception){
+     System.out.println(exception);
+     if (board.isPaused){
+      board.pause();
+     }
+    }
    }
   }
  }

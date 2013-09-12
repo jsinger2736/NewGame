@@ -7,8 +7,12 @@ public class Mob implements ActionListener{
  int[] origin = new int[2];
  int[] position = new int[2];
  int gold = 0;
+ int maxgold = 0;
+ int regeneration = 0;
+ int regenerate = 0;
  Timer timer;
  int type = 0;
+ int damage = 0;
  String name = "Generic Mob";
  int lastMove = 1;
  int stab=0;
@@ -22,5 +26,15 @@ public class Mob implements ActionListener{
  }
 
  public void actionPerformed(ActionEvent e){
+ }
+
+ public static int allyIdentifier(String nameo){ //for placing allies
+  if (nameo.equals("Wall")){
+   return 0;
+  } else if (nameo.equals("FootSoldier")){
+   return 1;
+  } else {
+   return 0;
+  }
  }
 }

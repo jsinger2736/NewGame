@@ -3,7 +3,6 @@ import java.awt.*;
 import javax.swing.*;
 
 public class Player extends Mob{
- String name = "You";
 
  public Player(Board parenti, int x, int y){
   super(parenti, x, y);
@@ -12,6 +11,8 @@ public class Player extends Mob{
   gold = 0;
   parent=parenti;
   type=1;
+  damage=1;
+  name = "You";
   timer = new Timer(200,this);
  }
 
@@ -23,6 +24,41 @@ public class Player extends Mob{
  }
 
  public void tryMove(int direction, boolean move){
+  int[] target = new int[2];
+  if (direction==1){
+   target[0]=position[0];
+   target[1]=position[1]-1;
+   lastMove=1;
+  } else if (direction==2){
+   target[0]=position[0]+1;
+   target[1]=position[1];
+   lastMove=2;
+  } else if (direction==3){
+   target[0]=position[0];
+   target[1]=position[1]+1;
+   lastMove=3;
+  } else if (direction==4){
+   target[0]=position[0]-1;
+   target[1]=position[1];
+   lastMove=4;
+  }
+  if (move){           //UP
+   for (int i=0; i<parent.enemies.size(); i++){
+    if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
+     return;
+    }
+   }
+   for (int i=0; i<parent.allies.size(); i++){
+    if (parent.allies.get(i).position[0]==target[0] && parent.allies.get(i).position[1]==target[1]){
+     if (parent.allies.get(i).name.equals("Wall")){
+      return;
+     }
+   }
+   }
+   position[0]=target[0];
+   position[1]=target[1];
+  }
+/*
   if (direction==1){
    lastMove=1;
   } else if (direction==2){
@@ -39,11 +75,25 @@ public class Player extends Mob{
       return;
      }
     }
+    for (int i=0; i<parent.allies.size(); i++){
+     if (parent.allies.get(i).position[0]==position[0] && parent.allies.get(i).position[1]==position[1]-1){
+      if (parent.allies.get(i).name.equals("Wall")){
+       return;
+      }
+     }
+    }
     position[1] = position[1]-1;
    } else if (direction==2){           //RIGHT
     for (int i=0; i<parent.enemies.size(); i++){
      if (parent.enemies.get(i).position[0]==position[0]+1 && parent.enemies.get(i).position[1]==position[1]){
       return;
+     }
+    }
+    for (int i=0; i<parent.allies.size(); i++){
+     if (parent.allies.get(i).position[0]==position[0]+1 && parent.allies.get(i).position[1]==position[1]){
+      if (parent.allies.get(i).name.equals("Wall")){
+       return;
+      }
      }
     }
     position[0] = position[0]+1;
@@ -53,6 +103,13 @@ public class Player extends Mob{
       return;
      }
     }
+    for (int i=0; i<parent.allies.size(); i++){
+     if (parent.allies.get(i).position[0]==position[0] && parent.allies.get(i).position[1]==position[1]+1){
+      if (parent.allies.get(i).name.equals("Wall")){
+       return;
+      }
+     }
+    }
     position[1] = position[1]+1;
    } else if (direction==4){           //LEFT
     for (int i=0; i<parent.enemies.size(); i++){
@@ -60,34 +117,41 @@ public class Player extends Mob{
       return;
      }
     }
+    for (int i=0; i<parent.allies.size(); i++){
+     if (parent.allies.get(i).position[0]==position[0]-1 && parent.allies.get(i).position[1]==position[1]){
+      if (parent.allies.get(i).name.equals("Wall")){
+       return;
+      }
+     }
+    }
     position[0] = position[0]-1;
    }
-  }
+  }*/
  }
 
- public void interact(){
+ public void interact(){//// FIX SO USES TARGET INT[]
   stab=parent.weapon; 
   if (stab==1){
    for (int i=0; i<parent.enemies.size(); i++){
     if (lastMove==1){
      if (parent.enemies.get(i).position[0]==position[0] && parent.enemies.get(i).position[1]==position[1]-1){
-      parent.enemies.get(i).gold=parent.enemies.get(i).gold-1;
-      gold = gold+1;
+      parent.enemies.get(i).gold=parent.enemies.get(i).gold-damage;
+      gold = gold+damage;
      }
     } else if (lastMove==2){
      if (parent.enemies.get(i).position[0]==position[0]+1 && parent.enemies.get(i).position[1]==position[1]){
-      parent.enemies.get(i).gold=parent.enemies.get(i).gold-1;
-      gold = gold+1;
+      parent.enemies.get(i).gold=parent.enemies.get(i).gold-damage;
+      gold = gold+damage;
      }
     } else if (lastMove==3){
      if (parent.enemies.get(i).position[0]==position[0] && parent.enemies.get(i).position[1]==position[1]+1){
-      parent.enemies.get(i).gold=parent.enemies.get(i).gold-1;
-      gold = gold+1;
+      parent.enemies.get(i).gold=parent.enemies.get(i).gold-damage;
+      gold = gold+damage;
      }
     } else if (lastMove==4){
      if (parent.enemies.get(i).position[0]==position[0]-1 && parent.enemies.get(i).position[1]==position[1]){
-      parent.enemies.get(i).gold=parent.enemies.get(i).gold-1;
-      gold = gold+1;
+      parent.enemies.get(i).gold=parent.enemies.get(i).gold-damage;
+      gold = gold+damage;
      }
     }
    }

@@ -2,22 +2,22 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class Goblin extends Mob{
+public class FootSoldier extends Mob{
 
- public Goblin(Board parenti, int x, int y){
+ public FootSoldier(Board parenti, int x, int y){
   super(parenti, x, y);
   position[0]=x;
   position[1]=y;
   origin[0]=x;
   origin[1]=y;
-  gold = 5;
-  maxgold = 5;
+  gold=10;
+  maxgold=10;
   parent=parenti;
-  type=2;
-  regenerate=24;
+  type=4;
+  regenerate=5;
   damage=1;
-  name="Goblin";
-  timer = new Timer(250,this);
+  name="FootSoldier";
+  timer=new Timer(200,this);
   timer.start();
  }
 
@@ -27,13 +27,14 @@ public class Goblin extends Mob{
   }
   if (gold<=0){
    timer.stop();
-   parent.enemies.remove(this);
+   parent.allies.remove(this);
    return;
   }
   regenerate();
   counter = !counter;
   if (counter){
    tryMove(home());
+   //tryMove(parent.player.position);
   }
  }
 
@@ -53,12 +54,10 @@ public class Goblin extends Mob{
    target[0]=position[0]-1;
    target[1]=position[1];
   }
-  if (parent.player.position[0]==target[0] && parent.player.position[1]==target[1]){
-   parent.player.gold=parent.player.gold-1;
-  }
-  for (int i=0; i<parent.allies.size(); i++){
-   if (parent.allies.get(i).position[0]==target[0] && parent.allies.get(i).position[1]==target[1]){
-    parent.allies.get(i).gold=parent.allies.get(i).gold-damage;
+  for (int i=0; i<parent.enemies.size(); i++){
+   if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
+    parent.enemies.get(i).gold=parent.enemies.get(i).gold-damage;
+    parent.player.gold=parent.player.gold+damage;
    }
   }
  }
@@ -78,22 +77,16 @@ public class Goblin extends Mob{
   int yChange = 500;
   int tempxChange = 0;
   int tempyChange = 0;
-  for (int i=0; i<parent.allies.size(); i++){
-   if (parent.allies.get(i).name.equals("Wall")){
+  for (int i=0; i<parent.enemies.size(); i++){
+   if (parent.enemies.get(i).name.equals("Wall")){
     continue;
    }
-   tempxChange=parent.allies.get(i).position[0]-position[0];
-   tempyChange=parent.allies.get(i).position[1]-position[1];
+   tempxChange=parent.enemies.get(i).position[0]-position[0];
+   tempyChange=parent.enemies.get(i).position[1]-position[1];
    if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
     xChange=tempxChange;
     yChange=tempyChange;
    }
-  }
-  tempxChange=parent.player.position[0]-position[0];
-  tempyChange=parent.player.position[1]-position[1];
-  if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
-   xChange=tempxChange;
-   yChange=tempyChange;
   }
   return new int[]{position[0]+xChange,position[1]+yChange};
  }
@@ -208,6 +201,7 @@ public class Goblin extends Mob{
  }
 
 }
+
 
 
 
