@@ -2,9 +2,9 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class Wall extends Mob{
+public class Rock extends Mob{
  
- public Wall(Board parenti, int x, int y){
+ public Rock(Board parenti, int x, int y){
   super(parenti, x, y);
   position[0]=x;
   position[1]=y;
@@ -12,8 +12,8 @@ public class Wall extends Mob{
   origin[1]=y;
   gold=3;
   parent=parenti;
-  type=3;
-  name="Wall";
+  type=6;
+  name="Rock";
   timer=new Timer(200,this);
   timer.start();
  }
@@ -29,6 +29,8 @@ public class Wall extends Mob{
   }
  }
 }
+
+
 
 
 

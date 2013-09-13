@@ -19,6 +19,8 @@ public class Board extends JPanel implements ActionListener{
  Player player;
  ArrayList<Mob> enemies = new ArrayList<Mob>();
  ArrayList<Mob> allies = new ArrayList<Mob>();
+ ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
+ Stats stats;
  String status = "";
  Image backgroundimg = null;
  
@@ -34,6 +36,7 @@ public class Board extends JPanel implements ActionListener{
   } catch (IOException e){
   }
   player = new Player(this,0,0);
+  stats = new Stats();
   timer.start();
   start();
   allies.add(new Wall(this,0,2));
@@ -52,6 +55,7 @@ public class Board extends JPanel implements ActionListener{
   allies.add(new Wall(this,-2,0));
   allies.add(new Wall(this,-2,1));
   allies.add(new Wall(this,-2,2));
+  player.gold=1200;
  }
 
  public void actionPerformed(ActionEvent e){
@@ -116,6 +120,7 @@ public class Board extends JPanel implements ActionListener{
   //return (int) getSize().getWidth() / boardWidth;
   return 21;
  }
+
  int squareHeight(){
   //return (int) getSize().getHeight() / boardHeight;
   return 21;
@@ -153,6 +158,9 @@ public class Board extends JPanel implements ActionListener{
      }
     }
     for (int k=0; k<allies.size(); k++){
+     if (allies.get(k).origin[0]==i && allies.get(k).origin[1]==j && (allies.get(k).name.equals("FootSoldier"))){
+      drawOrigin(g,2+(allies.get(k).origin[0]-curView[0])*squareWidth(),boardTop+(allies.get(k).origin[1]-curView[1])*squareHeight(),allies.get(k).type);
+     }
      if (allies.get(k).position[0]==i && allies.get(k).position[1]==j){
       drawSquare(g,2+(allies.get(k).position[0]-curView[0])*squareWidth(),boardTop+(allies.get(k).position[1]-curView[1])*squareHeight(),allies.get(k).type,allies.get(k).lastMove,allies.get(k).stab);
      }
@@ -175,6 +183,15 @@ public class Board extends JPanel implements ActionListener{
    }
   }
   drawSquare(g,2+(player.position[0]-curView[0])*squareWidth(),boardTop+(player.position[1]-curView[1])*squareHeight(),0,player.lastMove,player.stab);
+  for (int i=curView[0]; i<curView[0]+(int)size.getWidth()/squareWidth(); i++){
+   for (int j=curView[1]; j<curView[1]+(int)size.getHeight()/squareHeight(); j++){
+    for (int k=0; k<projectiles.size(); k++){
+     if (projectiles.get(k).position[0]==i && projectiles.get(k).position[1]==j){
+      drawProjectile(g,2+(i-curView[0])*squareWidth(),boardTop+(j-curView[1])*squareHeight(),projectiles.get(k).type,projectiles.get(k).orientation);
+     }
+    }
+   }
+  }
  }
 
  public void drawSquare(Graphics g, int x, int y, int type, int direction, int attack){
@@ -182,7 +199,21 @@ public class Board extends JPanel implements ActionListener{
   Color color;
   color = new Color(0,0,0);
   if (type==1){ //Player
-   color = new Color(50,50,200);
+   try {
+    if (direction==1){
+     img = ImageIO.read(new File("pictures/PlayerUp.png"));
+    } else if (direction==2){
+     img = ImageIO.read(new File("pictures/PlayerRight.png"));
+    } else if (direction==3){
+     img = ImageIO.read(new File("pictures/PlayerDown.png"));
+    } else if (direction==4){
+     img = ImageIO.read(new File("pictures/PlayerLeft.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
+   /*color = new Color(50,50,200);
    g.setColor(color);
    g.fillRect(x+2,y+2,squareWidth()-3,squareHeight()-3);
    g.setColor(color.brighter());
@@ -190,7 +221,7 @@ public class Board extends JPanel implements ActionListener{
    g.drawLine(x+1,y+1,x+squareWidth()-2,y+1);
    g.setColor(color.darker());
    g.drawLine(x+2,y+squareHeight()-2,x+squareWidth()-2,y+squareHeight()-2);
-   g.drawLine(x+squareWidth()-2,y+squareHeight()-2,x+squareWidth()-2,y+2);
+   g.drawLine(x+squareWidth()-2,y+squareHeight()-2,x+squareWidth()-2,y+2);*/
   }
   if (type==2){ //Goblin
    try {
@@ -209,16 +240,78 @@ public class Board extends JPanel implements ActionListener{
    }
   }
   if (type==3){ //Wall
-   color = new Color(150,150,150);
+   try {
+    if (direction==1){
+     img = ImageIO.read(new File("pictures/Wall.png"));
+    } else if (direction==2){
+     img = ImageIO.read(new File("pictures/Wall.png"));
+    } else if (direction==3){
+     img = ImageIO.read(new File("pictures/Wall.png"));
+    } else if (direction==4){
+     img = ImageIO.read(new File("pictures/Wall.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
   }
   if (type==4){ //FootSoldier
-   color = new Color (175,175,200);
-   g.setColor(color);
-   g.fillRect(x+2,y+2,squareWidth()-3,squareHeight()-3);
-   g.setColor(color.darker());
-   g.drawRect(x+1,y+1,squareWidth()-3,squareHeight()-3);
+   try {
+    if (direction==1){
+     img = ImageIO.read(new File("pictures/FootSoldierUp.png"));
+    } else if (direction==2){
+     img = ImageIO.read(new File("pictures/FootSoldierRight.png"));
+    } else if (direction==3){
+     img = ImageIO.read(new File("pictures/FootSoldierDown.png"));
+    } else if (direction==4){
+     img = ImageIO.read(new File("pictures/FootSoldierLeft.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
   }
-  if (type!=0 && type!=1 && type!=2 && type!=4){
+  if (type==5){ //Peasant
+   try {
+    if (direction==1){
+     img = ImageIO.read(new File("pictures/PeasantUp.png"));
+    } else if (direction==2){
+     img = ImageIO.read(new File("pictures/PeasantRight.png"));
+    } else if (direction==3){
+     img = ImageIO.read(new File("pictures/PeasantDown.png"));
+    } else if (direction==4){
+     img = ImageIO.read(new File("pictures/PeasantLeft.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
+  }
+  if (type==6){ //Rock
+   try {
+    img = ImageIO.read(new File("pictures/Rock.png"));
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
+  }
+  if (type==7){ //Bowman
+   try {
+    if (direction==1){
+     img = ImageIO.read(new File("pictures/BowmanUp.png"));
+    } else if (direction==2){
+     img = ImageIO.read(new File("pictures/BowmanRight.png"));
+    } else if (direction==3){
+     img = ImageIO.read(new File("pictures/BowmanDown.png"));
+    } else if (direction==4){
+     img = ImageIO.read(new File("pictures/BowmanLeft.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
+  }
+  /*if (type!=0 && type!=1 && type!=2 && type!=3 && type!=4){
    g.setColor(color);
    g.fillRect(x+1,y+1,squareWidth()-2,squareHeight()-2);
    g.setColor(color.brighter());
@@ -227,24 +320,7 @@ public class Board extends JPanel implements ActionListener{
    g.setColor(color.darker());
    g.drawLine(x+1,y+squareHeight()-1,x+squareWidth()-1,y+squareHeight()-1);
    g.drawLine(x+squareWidth()-1,y+squareHeight()-1,x+squareWidth()-1,y+1);
-  }
-  if (type==1 || type==4){
-   color = new Color(200,200,200);
-   g.setColor(color);
-   if (direction==1){
-    g.fillRect(x+1+squareWidth()/5,y+2,squareWidth()/5,squareHeight()/4);
-    g.fillRect(x+1+3*squareWidth()/5,y+2,squareWidth()/5,squareHeight()/4);
-   } else if (direction==2){
-    g.fillRect(x-2+3*squareWidth()/4,y+1+squareHeight()/5,squareWidth()/4,squareHeight()/5);
-    g.fillRect(x-2+3*squareWidth()/4,y+1+3*squareHeight()/5,squareWidth()/4,squareHeight()/5);
-   } else if (direction==3){
-    g.fillRect(x+1+squareWidth()/5,y-2+3*squareHeight()/4,squareWidth()/5,squareHeight()/4);
-    g.fillRect(x+1+3*squareWidth()/5,y-2+3*squareHeight()/4,squareWidth()/5,squareHeight()/4);
-   } else if (direction==4){
-    g.fillRect(x+3,y+1+squareHeight()/5,squareWidth()/4,squareHeight()/5);
-    g.fillRect(x+3,y+1+3*squareHeight()/5,squareWidth()/4,squareHeight()/5);
-   }
-  }
+  }*/
   if (type==0){
    if (attack==0){
    } else if (attack==1){
@@ -281,6 +357,44 @@ public class Board extends JPanel implements ActionListener{
   }
  }
  
+ public void drawOrigin(Graphics g, int x, int y, int type){
+  Color color = new Color(0,0,0);
+  if (type==4){
+   color = new Color(81,162,255);
+  }
+  g.setColor(color);
+  g.drawLine(x+squareWidth()/2-1,y+squareHeight()/2-1,x+squareWidth()/2+1,y+squareHeight()/2-1);
+  g.drawLine(x+squareWidth()/2-1,y+squareHeight()/2,x+squareWidth()/2+1,y+squareHeight()/2);
+  g.drawLine(x+squareWidth()/2-1,y+squareHeight()/2+1,x+squareWidth()/2+1,y+squareHeight()/2+1);
+ }
+
+ public void drawProjectile(Graphics g, int x, int y, int type, int orientation){
+  Image img = null;
+  if (type==1){ //Arrow
+   try {
+    if (orientation==1){
+     img = ImageIO.read(new File("pictures/ArrowUp.png"));
+    } else if (orientation==2){
+     img = ImageIO.read(new File("pictures/ArrowRight.png"));
+    } else if (orientation==3){
+     img = ImageIO.read(new File("pictures/ArrowDown.png"));
+    } else if (orientation==4){
+     img = ImageIO.read(new File("pictures/ArrowLeft.png"));
+    } else if (orientation==5){
+     img = ImageIO.read(new File("pictures/ArrowUpRight.png"));
+    } else if (orientation==6){
+     img = ImageIO.read(new File("pictures/ArrowDownRight.png"));
+    } else if (orientation==7){
+     img = ImageIO.read(new File("pictures/ArrowDownLeft.png"));
+    } else if (orientation==8){
+     img = ImageIO.read(new File("pictures/ArrowUpLeft.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
+  }
+ }
 
  public void place(){
   int[] target = new int[2];
@@ -308,14 +422,29 @@ public class Board extends JPanel implements ActionListener{
    }
   }
   if (parent.allyChoice==0){
-   if (player.gold>=3){
-    player.gold=player.gold-3;
+   if (player.gold>=stats.wallcost){
+    player.gold=player.gold-stats.wallcost;
     allies.add(new Wall(this,target[0],target[1]));
    }
   } else if (parent.allyChoice==1){
-   if (player.gold>=10){
-    player.gold=player.gold-10;
+   if (player.gold>=stats.rockcost){
+    player.gold=player.gold-stats.rockcost;
+    allies.add(new Rock(this,target[0],target[1]));
+   }
+  } else if (parent.allyChoice==2){
+   if (player.gold>=stats.footsoldiercost){
+    player.gold=player.gold-stats.footsoldiercost;
     allies.add(new FootSoldier(this,target[0],target[1]));
+   }
+  } else if (parent.allyChoice==3){
+   if (player.gold>=stats.peasantcost){
+    player.gold=player.gold-stats.peasantcost;
+    allies.add(new Peasant(this,target[0],target[1]));
+   }
+  } else if (parent.allyChoice==4){
+   if (player.gold>=stats.bowmancost){
+    player.gold=player.gold-stats.bowmancost;
+    allies.add(new Bowman(this,target[0],target[1]));
    }
   }
  }
@@ -339,6 +468,14 @@ public class Board extends JPanel implements ActionListener{
    if (allies.get(i).position[0]==target[0] && allies.get(i).position[1]==target[1]){
     player.gold=player.gold+allies.get(i).gold;
     allies.get(i).gold=0;
+    return;
+   }
+  }
+  for (int i=0; i<allies.size(); i++){
+   if (allies.get(i).origin[0]==target[0] && allies.get(i).origin[1]==target[1]){
+    player.gold=player.gold+allies.get(i).gold;
+    allies.get(i).gold=0;
+    return;
    }
   }
  }
@@ -349,6 +486,9 @@ public class Board extends JPanel implements ActionListener{
    int keychar = e.getKeyChar();
    if (!isStarted){
     return;
+   }
+   if (keycode==KeyEvent.VK_TAB){
+    parent.allyMenu();
    }
    if (keychar=='p' || keychar=='P' || keycode==KeyEvent.VK_ESCAPE){
     pause();
@@ -378,22 +518,6 @@ public class Board extends JPanel implements ActionListener{
     place();
    } else if (keychar=='Q'){
     remove();
-   } else if (keycode==KeyEvent.VK_TAB){
-    if (!isPaused){
-     pause();
-    }
-    Object[] list = new Object[2];
-    list[0]="Wall";
-    list[1]="FootSoldier";
-    try{
-     String choice = JOptionPane.showInputDialog(null,"Choose the ally you'd like to spawn.","Choice of Ally",JOptionPane.PLAIN_MESSAGE,null,list,list[parent.allyChoice]).toString();
-     parent.allyChoice = Mob.allyIdentifier(choice);
-     if (isPaused){
-      pause();
-     }
-    } catch (Exception exception){
-     System.out.println(exception);
-    }
    }
    switch (keycode){
     case KeyEvent.VK_UP:

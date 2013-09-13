@@ -25,24 +25,33 @@ public class Player extends Mob{
 
  public void tryMove(int direction, boolean move){
   int[] target = new int[2];
+  int[] behindtarget = new int[2];
   if (direction==1){
    target[0]=position[0];
    target[1]=position[1]-1;
+   behindtarget[0]=position[0];
+   behindtarget[1]=position[1]-2;
    lastMove=1;
   } else if (direction==2){
    target[0]=position[0]+1;
    target[1]=position[1];
+   behindtarget[0]=position[0]+2;
+   behindtarget[1]=position[1];
    lastMove=2;
   } else if (direction==3){
    target[0]=position[0];
    target[1]=position[1]+1;
+   behindtarget[0]=position[0];
+   behindtarget[1]=position[1]+2;
    lastMove=3;
   } else if (direction==4){
    target[0]=position[0]-1;
    target[1]=position[1];
+   behindtarget[0]=position[0]-2;
+   behindtarget[1]=position[1];
    lastMove=4;
   }
-  if (move){           //UP
+  if (move){
    for (int i=0; i<parent.enemies.size(); i++){
     if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
      return;
@@ -53,7 +62,22 @@ public class Player extends Mob{
      if (parent.allies.get(i).name.equals("Wall")){
       return;
      }
-   }
+     if (parent.allies.get(i).name.equals("Rock")){
+      for (int j=0; j<parent.enemies.size(); j++){
+       if (parent.enemies.get(j).position[0]==behindtarget[0] && parent.enemies.get(j).position[1]==behindtarget[1]){
+        return;
+       }
+      }
+      for (int j=0; j<parent.allies.size(); j++){
+       if (parent.allies.get(j).position[0]==behindtarget[0] && parent.allies.get(j).position[1]==behindtarget[1]){
+        return;
+       }
+      }
+      parent.allies.get(i).position[0]=behindtarget[0];
+      parent.allies.get(i).position[1]=behindtarget[1];
+      break;
+     }
+    }
    }
    position[0]=target[0];
    position[1]=target[1];
@@ -130,6 +154,34 @@ public class Player extends Mob{
  }
 
  public void interact(){//// FIX SO USES TARGET INT[]
+  if (stab!=0){
+   return;
+  }
+  stab = parent.weapon;
+  int[] target = new int[2];
+  if (lastMove==1){
+   target[0]=position[0];
+   target[1]=position[1]-1;
+  } else if (lastMove==2){
+   target[0]=position[0]+1;
+   target[1]=position[1];
+  } else if (lastMove==3){
+   target[0]=position[0];
+   target[1]=position[1]+1;
+  } else if (lastMove==4){
+   target[0]=position[0]-1;
+   target[1]=position[1];
+  }
+  for (int i=0; i<parent.enemies.size(); i++){
+   if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
+    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.playerdamage;
+    parent.player.gold=parent.player.gold+parent.stats.playerdamage;
+   }
+  }
+  timer.setDelay(parent.stats.playerspeed);
+  timer.start();
+
+  /*
   stab=parent.weapon; 
   if (stab==1){
    for (int i=0; i<parent.enemies.size(); i++){
@@ -157,7 +209,7 @@ public class Player extends Mob{
    }
    timer.setDelay(200);
   }
-  timer.start();
+  timer.start();*/
  }
 
 }

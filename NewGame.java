@@ -46,6 +46,30 @@ public class NewGame extends JFrame{
   game.board.start();
  }
 
+ public void allyMenu(){
+  if (!board.isPaused){
+   board.pause();
+  }
+  Object[] list = new Object[5];
+  list[0]="Wall";
+  list[1]="Rock";
+  list[2]="FootSoldier";
+  list[3]="Peasant";
+  list[4]="Bowman";
+  try{
+   String choice = JOptionPane.showInputDialog(null,"Choose the ally you'd like to spawn.","Choice of Ally",JOptionPane.PLAIN_MESSAGE,null,list,list[allyChoice]).toString();
+   allyChoice = Mob.allyIdentifier(choice);
+   if (board.isPaused){
+    board.pause();
+   }
+  } catch (Exception exception){
+   System.out.println(exception);
+   if (board.isPaused){
+    board.pause();
+   }
+  }
+ }
+
  public class MenuHandler implements ActionListener{
   public void actionPerformed(ActionEvent e){
    Object source = e.getSource();
@@ -53,24 +77,7 @@ public class NewGame extends JFrame{
     System.exit(0);
    }
    if (source==allychoice){
-    if (!board.isPaused){
-     board.pause();
-    }
-    Object[] list = new Object[2];
-    list[0]="Wall";
-    list[1]="FootSoldier";
-    try{
-     String choice = JOptionPane.showInputDialog(null,"Choose the ally you'd like to spawn.","Choice of Ally",JOptionPane.PLAIN_MESSAGE,null,list,list[allyChoice]).toString();
-     allyChoice = Mob.allyIdentifier(choice);
-     if (board.isPaused){
-      board.pause();
-     }
-    } catch (Exception exception){
-     System.out.println(exception);
-     if (board.isPaused){
-      board.pause();
-     }
-    }
+    allyMenu();
    }
   }
  }

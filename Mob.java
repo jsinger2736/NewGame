@@ -13,8 +13,10 @@ public class Mob implements ActionListener{
  Timer timer;
  int type = 0;
  int damage = 0;
+ int radius = 10;
+ int range = 5;
  String name = "Generic Mob";
- int lastMove = 1;
+ int lastMove = 3;
  int stab=0;
  boolean counter = false;
  
@@ -31,8 +33,14 @@ public class Mob implements ActionListener{
  public static int allyIdentifier(String nameo){ //for placing allies
   if (nameo.equals("Wall")){
    return 0;
-  } else if (nameo.equals("FootSoldier")){
+  } else if (nameo.equals("Rock")){
    return 1;
+  } else if (nameo.equals("FootSoldier")){
+   return 2;
+  } else if (nameo.equals("Peasant")){
+   return 3;
+  } else if (nameo.equals("Bowman")){
+   return 4;
   } else {
    return 0;
   }

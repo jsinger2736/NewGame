@@ -11,13 +11,13 @@ public class Goblin extends Mob{
   origin[0]=x;
   origin[1]=y;
   gold = 5;
-  maxgold = 5;
+  //maxgold = 5;
   parent=parenti;
   type=2;
-  regenerate=24;
-  damage=1;
+  //regenerate=24;
+  //damage=1;
   name="Goblin";
-  timer = new Timer(250,this);
+  timer = new Timer(parent.stats.goblinspeed,this);
   timer.start();
  }
 
@@ -54,20 +54,20 @@ public class Goblin extends Mob{
    target[1]=position[1];
   }
   if (parent.player.position[0]==target[0] && parent.player.position[1]==target[1]){
-   parent.player.gold=parent.player.gold-1;
+   parent.player.gold=parent.player.gold-parent.stats.goblindamage;
   }
   for (int i=0; i<parent.allies.size(); i++){
    if (parent.allies.get(i).position[0]==target[0] && parent.allies.get(i).position[1]==target[1]){
-    parent.allies.get(i).gold=parent.allies.get(i).gold-damage;
+    parent.allies.get(i).gold=parent.allies.get(i).gold-parent.stats.goblindamage;
    }
   }
  }
 
  public void regenerate(){
   regeneration++;
-  if (regeneration>=regenerate){
+  if (regeneration>=parent.stats.goblinregenerate){
    regeneration=0;
-   if (gold<maxgold){
+   if (gold<parent.stats.goblinmaxgold){
     gold++;
    }
   }
@@ -79,7 +79,7 @@ public class Goblin extends Mob{
   int tempxChange = 0;
   int tempyChange = 0;
   for (int i=0; i<parent.allies.size(); i++){
-   if (parent.allies.get(i).name.equals("Wall")){
+   if (parent.allies.get(i).name.equals("Wall") || parent.allies.get(i).name.equals("Rock")){
     continue;
    }
    tempxChange=parent.allies.get(i).position[0]-position[0];
