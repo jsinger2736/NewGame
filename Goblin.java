@@ -76,8 +76,8 @@ public class Goblin extends Mob{
  public int[] home(){
   int xChange = 500;
   int yChange = 500;
-  int tempxChange = 0;
-  int tempyChange = 0;
+  int tempxChange = 500;
+  int tempyChange = 500;
   for (int i=0; i<parent.allies.size(); i++){
    if (parent.allies.get(i).name.equals("Wall") || parent.allies.get(i).name.equals("Rock")){
     continue;
@@ -188,6 +188,7 @@ public class Goblin extends Mob{
    target[0]=position[0]-1;
    target[1]=position[1];
   }
+  lastMove=direction;
   for (int i=0; i<parent.enemies.size(); i++){
    if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
     return false;
@@ -203,7 +204,6 @@ public class Goblin extends Mob{
   }
   position[0]=target[0];
   position[1]=target[1];
-  lastMove=direction;
   return true;
  }
 

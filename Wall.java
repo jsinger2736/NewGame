@@ -13,6 +13,7 @@ public class Wall extends Mob{
   gold=3;
   parent=parenti;
   type=3;
+  radius=2;
   name="Wall";
   timer=new Timer(200,this);
   timer.start();

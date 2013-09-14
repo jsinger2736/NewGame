@@ -16,6 +16,7 @@ public class Projectile implements ActionListener{
  int allegiance = 0;
  float xChange = 1;
  float yChange = 1;
+ int range = 1;
  int turns = 1;
  int turn = 0;
  boolean dead = false;

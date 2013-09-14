@@ -39,6 +39,9 @@ public class Board extends JPanel implements ActionListener{
   stats = new Stats();
   timer.start();
   start();
+  Toolkit tk = getToolkit();
+  Cursor cursor = tk.createCustomCursor(tk.getImage(""), new Point(), "cursor");
+  setCursor(cursor);
   allies.add(new Wall(this,0,2));
   allies.add(new Wall(this,0,-2));
   allies.add(new Wall(this,1,2));
@@ -59,13 +62,19 @@ public class Board extends JPanel implements ActionListener{
  }
 
  public void actionPerformed(ActionEvent e){
-  spawn(1,player.position);
-  repaint();
   if (player.gold<0){
    player.gold=0;
   }
-  status = "("+player.position[0]+","+(-player.position[1])+")   Gold:"+player.gold;
-  statusbar.setText(status);
+  if (!isPaused){
+   spawn();
+   //status = "("+player.position[0]+","+(-player.position[1])+")   Gold:"+player.gold;
+   status = "("+(curView[0]+(int)getSize().getWidth()/(squareWidth()*2))+","+(curView[1]+(int)getSize().getHeight()/(squareHeight()*2))+")   Gold:"+player.gold;
+   statusbar.setText(status);
+  } else {
+   status = "Paused   ("+(curView[0]+(int)getSize().getWidth()/(squareWidth()*2))+","+(curView[1]+(int)getSize().getHeight()/(squareHeight()*2))+")   Gold:"+player.gold;
+   statusbar.setText(status);
+  }
+  repaint();
  }
 
  public void start(){
@@ -86,7 +95,10 @@ public class Board extends JPanel implements ActionListener{
    for (int i=0; i<allies.size(); i++){
     allies.get(i).timer.stop();
    }
-   timer.stop();
+   for (int i=0; i<projectiles.size(); i++){
+    projectiles.get(i).timer.stop();
+   }
+   //timer.stop();
   } else {
    statusbar.setText(status);
    player.timer.start();
@@ -96,24 +108,102 @@ public class Board extends JPanel implements ActionListener{
    for (int i=0; i<allies.size(); i++){
     allies.get(i).timer.start();
    }
-   timer.start();
+   for (int i=0; i<projectiles.size(); i++){
+    projectiles.get(i).timer.start();
+   }
+   //timer.start();
   }
  }
 
- public void spawn(int type, int[] target){
-  if (enemies.size()<2){
-   int positivex=1;
-   int positivey=1;
-   if (Math.random()>.5){
-    positivex=-1;
-   }
-   if (Math.random()>.5){
-    positivey=-1;
-   }
-   if (type==1){
-    enemies.add(new Goblin(this, (int)(Math.random()*10*positivex+target[0]+(4*positivex)), (int)(Math.random()*10*positivey+target[1]+(4*positivey))));
+ public void spawn(){
+  int failsafe = 0;
+  int[] enemyAmount = new int[9];
+  for (int i=0; i<enemies.size(); i++){
+   enemyAmount[enemies.get(i).type]=enemyAmount[enemies.get(i).type]+1;
+  }
+  int positivex=1;
+  int positivey=1;
+  if (enemyAmount[2]<3){
+   while (failsafe<10){
+    positivex=1;
+    positivey=1;
+    if (Math.random()>.5){
+     positivex=-1;
+    }
+    if (Math.random()>.5){
+     positivey=-1;
+    }
+    if (spawnSpecific(1, new int[]{(int)(Math.random()*20*positivex+0+(4*positivex)), (int)(Math.random()*20*positivey+0+(4*positivey))})){
+     failsafe=0;
+     break;
+    } else {
+     failsafe++;
+    }
+    //enemies.add(new Goblin(this, (int)(Math.random()*20*positivex+0+(4*positivex)), (int)(Math.random()*20*positivey+0+(4*positivey))));
    }
   }
+  if (enemyAmount[8]<1){
+   while (failsafe<10){
+    positivex=1;
+    positivey=1;
+    if (Math.random()>.5){
+     positivex=-1;
+    }
+    if (Math.random()>.5){
+     positivey=-1;
+    }
+    if (spawnSpecific(2, new int[]{(int)(Math.random()*20*positivex+0+(4*positivex)), (int)(Math.random()*20*positivey+0+(4*positivey))})){
+     failsafe=0;
+     break;
+    } else {
+     failsafe++;
+    }
+   }
+   while (failsafe<10){
+    positivex=1;
+    positivey=1;
+    if (Math.random()>.5){
+     positivex=-1;
+    }
+    if (Math.random()>.5){
+     positivey=-1;
+    }
+    if (spawnSpecific(2, new int[]{(int)(Math.random()*25*positivex+0+(4*positivex)), (int)(Math.random()*25*positivey+0+(4*positivey))})){
+     failsafe=0;
+     break;
+    } else {
+     failsafe++;
+    }
+   }
+  }
+ }
+
+ public boolean spawnSpecific(int type, int[] target){
+  for (int i=0; i<allies.size(); i++){
+   if (Math.abs(target[0]-allies.get(i).position[0])<=allies.get(i).radius && Math.abs(target[1]-allies.get(i).position[1])<=allies.get(i).radius){
+    return false;
+   }
+   /*if (allies.get(i).position[0]==target[0] && allies.get(i).position[1]==target[1]){
+    return false;
+   }*/
+  }
+  for (int i=0; i<enemies.size(); i++){
+   if (enemies.get(i).position[0]==target[0] && enemies.get(i).position[1]==target[1]){
+    return false;
+   }
+  }
+  if (Math.abs(target[0]-player.position[0])<6 && Math.abs(target[1]-player.position[1])<6){
+   return false;
+  }
+  /*if (player.position[0]==target[0] && player.position[1]==target[1]){
+   return false;
+  }*/
+  if (type==1){ //goblin
+   enemies.add(new Goblin(this, target[0], target[1]));
+  } else if (type==2){ //goblinarcher
+   enemies.add(new GoblinArcher(this, target[0], target[1]));
+  }
+  return true;
  }
 
  int squareWidth(){
@@ -129,27 +219,30 @@ public class Board extends JPanel implements ActionListener{
  public void paint(Graphics g){
   super.paint(g);
   Dimension size = getSize();
-  //Background drawing
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth)*squareWidth(), -(player.position[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth)*squareWidth(), -(player.position[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth)*squareWidth(), -(player.position[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth+boardWidth)*squareWidth(), -(player.position[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth+boardWidth)*squareWidth(), -(player.position[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth+boardWidth)*squareWidth(), -(player.position[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-boardWidth)*squareWidth(), -(player.position[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-boardWidth)*squareWidth(), -(player.position[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-boardWidth)*squareWidth(), -(player.position[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-2*boardWidth)*squareWidth(), -(player.position[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-2*boardWidth)*squareWidth(), -(player.position[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-2*boardWidth)*squareWidth(), -(player.position[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-3*boardWidth)*squareWidth(), -(player.position[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-3*boardWidth)*squareWidth(), -(player.position[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  g.drawImage(backgroundimg, -(player.position[0]%boardWidth-3*boardWidth)*squareWidth(), -(player.position[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
-  int boardTop = 0;//(int) size.getHeight() - boardHeight * squareHeight();
-  if (curView[0]<player.position[0]-boardWidth/4 || curView[0]>player.position[0]+boardWidth/4 || curView[1]<player.position[1]-boardHeight/4 || curView[1]<player.position[1]+boardHeight/4){
-   curView[0]=player.position[0]-(int)size.getWidth()/(squareWidth()*2);//boardWidth/2;  player.position[0]-
-   curView[1]=player.position[1]-(int)size.getHeight()/(squareHeight()*2);//boardHeight/2;
+  if (!isPaused){
+   if (curView[0]<player.position[0]-boardWidth/4 || curView[0]>player.position[0]+boardWidth/4 || curView[1]<player.position[1]-boardHeight/4 || curView[1]<player.position[1]+boardHeight/4){
+    curView[0]=player.position[0]-(int)size.getWidth()/(squareWidth()*2);//boardWidth/2;  player.position[0]-
+    curView[1]=player.position[1]-(int)size.getHeight()/(squareHeight()*2);//boardHeight/2;
+   }
+  } else {
   }
+  //Background drawing
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth)*squareWidth(), -(curView[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth)*squareWidth(), -(curView[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth)*squareWidth(), -(curView[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth+boardWidth)*squareWidth(), -(curView[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth+boardWidth)*squareWidth(), -(curView[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth+boardWidth)*squareWidth(), -(curView[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-boardWidth)*squareWidth(), -(curView[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-boardWidth)*squareWidth(), -(curView[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-boardWidth)*squareWidth(), -(curView[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-2*boardWidth)*squareWidth(), -(curView[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-2*boardWidth)*squareWidth(), -(curView[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-2*boardWidth)*squareWidth(), -(curView[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-3*boardWidth)*squareWidth(), -(curView[1]%boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-3*boardWidth)*squareWidth(), -(curView[1]%boardHeight+boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  g.drawImage(backgroundimg, -(curView[0]%boardWidth-3*boardWidth)*squareWidth(), -(curView[1]%boardHeight-boardHeight)*squareHeight(), squareWidth()*boardWidth, squareHeight()*boardHeight, null);
+  int boardTop = 0;//(int) size.getHeight() - boardHeight * squareHeight();
   for (int i=curView[0]; i<curView[0]+(int)size.getWidth()/squareWidth(); i++){
    for (int j=curView[1]; j<curView[1]+(int)size.getHeight()/squareHeight(); j++){
     for (int k=0; k<enemies.size(); k++){
@@ -311,16 +404,22 @@ public class Board extends JPanel implements ActionListener{
    } catch (IOException e){
    }
   }
-  /*if (type!=0 && type!=1 && type!=2 && type!=3 && type!=4){
-   g.setColor(color);
-   g.fillRect(x+1,y+1,squareWidth()-2,squareHeight()-2);
-   g.setColor(color.brighter());
-   g.drawLine(x,y+squareHeight()-1,x,y);
-   g.drawLine(x,y,x+squareWidth()-1,y);
-   g.setColor(color.darker());
-   g.drawLine(x+1,y+squareHeight()-1,x+squareWidth()-1,y+squareHeight()-1);
-   g.drawLine(x+squareWidth()-1,y+squareHeight()-1,x+squareWidth()-1,y+1);
-  }*/
+  if (type==8){
+   try {
+    if (direction==1){
+     img = ImageIO.read(new File("pictures/GoblinArcherUp.png"));
+    } else if (direction==2){
+     img = ImageIO.read(new File("pictures/GoblinArcherRight.png"));
+    } else if (direction==3){
+     img = ImageIO.read(new File("pictures/GoblinArcherDown.png"));
+    } else if (direction==4){
+     img = ImageIO.read(new File("pictures/GoblinArcherLeft.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+   }
+  }
   if (type==0){
    if (attack==0){
    } else if (attack==1){
@@ -480,6 +579,18 @@ public class Board extends JPanel implements ActionListener{
   }
  }
 
+ public void moveView(int direction){
+  if (direction==1){
+   curView[1]=curView[1]-1;
+  } else if (direction==2){
+   curView[0]=curView[0]+1;
+  } else if (direction==3){
+   curView[1]=curView[1]+1;
+  } else if (direction==4){
+   curView[0]=curView[0]-1;
+  }
+ }
+
  class TAdapter extends KeyAdapter{
   public void keyPressed(KeyEvent e){
    int keycode = e.getKeyCode();
@@ -494,6 +605,15 @@ public class Board extends JPanel implements ActionListener{
     pause();
    }
    if (isPaused){
+    if (keychar=='w' || keychar=='W' || keycode==KeyEvent.VK_UP){
+     moveView(1);
+    } else if (keychar=='d' || keychar=='D' || keycode==KeyEvent.VK_RIGHT){
+     moveView(2);
+    } else if (keychar=='s' || keychar=='S' || keycode==KeyEvent.VK_DOWN){
+     moveView(3);
+    } else if (keychar=='a' || keychar=='A' || keycode==KeyEvent.VK_LEFT){
+     moveView(4);
+    }
     return;
    }
    if (keychar=='w'){

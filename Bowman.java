@@ -12,8 +12,7 @@ public class Bowman extends Mob{
   gold=parent.stats.bowmanmaxgold;
   parent=parenti;
   type=7;
-  radius=5;
-  range=5;
+  radius=7;
   name="Bowman";
   timer=new Timer(parent.stats.bowmanspeed,this);
   timer.start();
@@ -37,6 +36,32 @@ public class Bowman extends Mob{
  }
 
  public void interact(int xChange, int yChange){
+  int orientation = 1;
+  if (xChange==0 && yChange<0){
+   lastMove=1;
+   orientation=1;
+  } else if (xChange>0 && yChange==0){
+   lastMove=2;
+   orientation=2;
+  } else if (xChange==0 && yChange>0){
+   lastMove=3;
+   orientation=3;
+  } else if (xChange<0 && yChange==0){
+   lastMove=4;
+   orientation=4;
+  } else if (xChange>0 && yChange<0){
+   lastMove=1;
+   orientation=5;
+  } else if (xChange>0 && yChange>0){
+   lastMove=2;
+   orientation=6;
+  } else if (xChange<0 && yChange>0){
+   lastMove=3;
+   orientation=7;
+  } else if (xChange<0 && yChange<0){
+   lastMove=4;
+   orientation=8;
+  }
   if (Math.abs(xChange)+Math.abs(yChange)==1){
    stab = 1;
    int[] target = new int[2];
@@ -60,33 +85,7 @@ public class Bowman extends Mob{
     }
    }
   } else {
-   int orientation = 1;
-   if (xChange==0 && yChange<0){
-    lastMove=1;
-    orientation=1;
-   } else if (xChange>0 && yChange==0){
-    lastMove=2;
-    orientation=2;
-   } else if (xChange==0 && yChange>0){
-    lastMove=3;
-    orientation=3;
-   } else if (xChange<0 && yChange==0){
-    lastMove=4;
-    orientation=4;
-   } else if (xChange>0 && yChange<0){
-    lastMove=1;
-    orientation=5;
-   } else if (xChange>0 && yChange>0){
-    lastMove=2;
-    orientation=6;
-   } else if (xChange<0 && yChange>0){
-    lastMove=3;
-    orientation=7;
-   } else if (xChange<0 && yChange<0){
-    lastMove=4;
-    orientation=8;
-   }
-   parent.projectiles.add(new Arrow(parent,position[0],position[1],position[0]+xChange,position[1]+yChange,orientation,1,parent.stats.bowmandamage));
+   parent.projectiles.add(new Arrow(parent,position[0],position[1],position[0]+xChange,position[1]+yChange,orientation,1,parent.stats.bowmandamage,parent.stats.bowmanrange));
   }
  }
 
@@ -101,29 +100,29 @@ public class Bowman extends Mob{
  }
 
  public int[] home(){
-  int xChange = radius;
-  int yChange = radius;
-  int tempxChange = 0;
-  int tempyChange = 0;
+  double xChange = radius/Math.sqrt(2);
+  double yChange = radius/Math.sqrt(2);
+  double tempxChange = 500;
+  double tempyChange = 500;
   for (int i=0; i<parent.enemies.size(); i++){
    if (parent.enemies.get(i).name.equals("Wall") || parent.enemies.get(i).name.equals("Rock")){
     continue;
    }
    tempxChange=parent.enemies.get(i).position[0]-position[0];//origin[0];
    tempyChange=parent.enemies.get(i).position[1]-position[1];//origin[1];
-   if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
+   if ((int)Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<=(int)Math.sqrt(xChange*xChange+yChange*yChange)){
     xChange=tempxChange;
     yChange=tempyChange;
    }
   }
-  if (Math.sqrt(xChange*xChange+yChange*yChange)<Math.sqrt(range*range+range*range)){
-   interact(xChange,yChange);
-   return new int[]{2736,2736};
-  }
-  if (xChange==radius && yChange==radius){
+  if (xChange==radius/Math.sqrt(2) && yChange==radius/Math.sqrt(2)){
    return new int[]{origin[0],origin[1]};
   }
-  return new int[]{origin[0]+xChange,origin[1]+yChange};
+  if ((int)Math.sqrt(xChange*xChange+yChange*yChange)<=parent.stats.bowmanrange){
+   interact((int)xChange,(int)yChange);
+   return new int[]{2736,2736};
+  }
+  return new int[]{origin[0]+(int)xChange,origin[1]+(int)yChange};
  }
 
  public void tryMove(int[] target){
@@ -219,6 +218,7 @@ public class Bowman extends Mob{
    target[0]=position[0]-1;
    target[1]=position[1];
   }
+  lastMove=direction;
   for (int i=0; i<parent.enemies.size(); i++){
    if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
     return false;
@@ -234,7 +234,6 @@ public class Bowman extends Mob{
   }
   position[0]=target[0];
   position[1]=target[1];
-  lastMove=direction;
   return true;
  }
 

@@ -13,6 +13,7 @@ public class Rock extends Mob{
   gold=3;
   parent=parenti;
   type=6;
+  radius=2;
   name="Rock";
   timer=new Timer(200,this);
   timer.start();
