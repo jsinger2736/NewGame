@@ -7,7 +7,7 @@ import javax.imageio.*;
 import java.io.*;
 
 public class Board extends JPanel implements ActionListener{
- int boardWidth = 31;
+ int boardWidth = 50;
  int boardHeight = 31;
  int[] curView = {0,0};
  boolean isStarted = false;
@@ -23,6 +23,8 @@ public class Board extends JPanel implements ActionListener{
  Stats stats;
  String status = "";
  Image backgroundimg = null;
+ Cost cost = null;
+ Tutorial tutorial;
  
  public Board(NewGame parenti){
   setFocusable(true);
@@ -38,41 +40,59 @@ public class Board extends JPanel implements ActionListener{
   player = new Player(this,0,0);
   stats = new Stats();
   timer.start();
-  start();
+  //start();
   Toolkit tk = getToolkit();
   Cursor cursor = tk.createCustomCursor(tk.getImage(""), new Point(), "cursor");
   setCursor(cursor);
-  allies.add(new Wall(this,0,2));
-  allies.add(new Wall(this,0,-2));
+  tutorial = new Tutorial(this);
+
+  for (int i=-3; i<4; i++){
+   for (int j=-3; j<4; j++){
+    if ((i==-3 || i==3) && j!=0){
+     allies.add(new Wall(this,i,j));
+    }
+    if ((j==-3 || j==3) && i!=0){
+     allies.add(new Wall(this,i,j));
+    }
+   }
+  }
+
+  /*//allies.add(new Wall(this,0,2));
+  //allies.add(new Wall(this,0,-2));
   allies.add(new Wall(this,1,2));
   allies.add(new Wall(this,1,-2));
   allies.add(new Wall(this,-1,2));
   allies.add(new Wall(this,-1,-2));
   allies.add(new Wall(this,2,-2));
   allies.add(new Wall(this,2,-1));
-  allies.add(new Wall(this,2,0));
+  //allies.add(new Wall(this,2,0));
   allies.add(new Wall(this,2,1));
   allies.add(new Wall(this,2,2));
   allies.add(new Wall(this,-2,-2));
   allies.add(new Wall(this,-2,-1));
-  allies.add(new Wall(this,-2,0));
+  //allies.add(new Wall(this,-2,0));
   allies.add(new Wall(this,-2,1));
-  allies.add(new Wall(this,-2,2));
-  player.gold=1200;
+  allies.add(new Wall(this,-2,2));*/
+  player.gold=35;
  }
 
  public void actionPerformed(ActionEvent e){
   if (player.gold<0){
    player.gold=0;
   }
+  player.calculateValue();
   if (!isPaused){
-   spawn();
    //status = "("+player.position[0]+","+(-player.position[1])+")   Gold:"+player.gold;
-   status = "("+(curView[0]+(int)getSize().getWidth()/(squareWidth()*2))+","+(curView[1]+(int)getSize().getHeight()/(squareHeight()*2))+")   Gold:"+player.gold;
+   status = "("+(curView[0]+(int)getSize().getWidth()/(squareWidth()*2))+","+(curView[1]+(int)getSize().getHeight()/(squareHeight()*2))+")   Value:"+player.value+"   Gold:"+player.gold;
    statusbar.setText(status);
   } else {
-   status = "Paused   ("+(curView[0]+(int)getSize().getWidth()/(squareWidth()*2))+","+(curView[1]+(int)getSize().getHeight()/(squareHeight()*2))+")   Gold:"+player.gold;
+   status = "Paused   ("+(curView[0]+(int)getSize().getWidth()/(squareWidth()*2))+","+(curView[1]+(int)getSize().getHeight()/(squareHeight()*2))+")   Value:"+player.value+"   Gold:"+player.gold;
    statusbar.setText(status);
+  }
+  if (isStarted){
+   if (!isPaused){
+    spawn();
+   }
   }
   repaint();
  }
@@ -83,7 +103,7 @@ public class Board extends JPanel implements ActionListener{
  
  public void pause(){
   if (!isStarted){
-   return;
+   //return;
   }
   isPaused = !isPaused;
   if (isPaused){
@@ -117,33 +137,71 @@ public class Board extends JPanel implements ActionListener{
 
  public void spawn(){
   int failsafe = 0;
-  int[] enemyAmount = new int[9];
+  int[] enemyAmount = new int[10];
   for (int i=0; i<enemies.size(); i++){
    enemyAmount[enemies.get(i).type]=enemyAmount[enemies.get(i).type]+1;
   }
   int positivex=1;
   int positivey=1;
-  if (enemyAmount[2]<3){
-   while (failsafe<10){
-    positivex=1;
-    positivey=1;
-    if (Math.random()>.5){
-     positivex=-1;
-    }
-    if (Math.random()>.5){
-     positivey=-1;
-    }
-    if (spawnSpecific(1, new int[]{(int)(Math.random()*20*positivex+0+(4*positivex)), (int)(Math.random()*20*positivey+0+(4*positivey))})){
-     failsafe=0;
-     break;
-    } else {
-     failsafe++;
-    }
-    //enemies.add(new Goblin(this, (int)(Math.random()*20*positivex+0+(4*positivex)), (int)(Math.random()*20*positivey+0+(4*positivey))));
+  if (player.value>=0 && player.value<30){
+   if (enemyAmount[2]<2){
+    spawnInArea(2,1,new int[]{0,0},8,20);
+   }
+  } else if (player.value>=30 && player.value<99){
+   if (enemyAmount[2]<3){
+    spawnInArea(2,1,new int[]{30,0},0,10);
+   }
+   if (enemyAmount[8]<1){
+    spawnInArea(8,1,new int[]{35,0},0,5);
+   }
+  } else if (player.value>=100 && player.value<199){
+   if (enemyAmount[2]<4){
+    spawnInArea(2,1,new int[]{30,0},0,10);
+   }
+   if (enemyAmount[8]<1){
+    spawnInArea(8,2,new int[]{35,0},0,0);
+   }
+   if (enemyAmount[9]<1){
+    spawnInArea(9,1,new int[]{35,0},0,10);
+   }
+  } else if (player.value>=200 && player.value<599){
+   if (enemyAmount[2]<3 && enemyAmount[8]<2){
+    spawnInArea(2,6,new int[]{40,0},0,7);
+    spawnInArea(9,1,new int[]{45,0},0,10);
+    spawnInArea(8,2,new int[]{33,-8},0,4);
+    spawnInArea(8,2,new int[]{33,8},0,4);
+   }
+  } else if (player.value>=600 /*&& player.value<1199*/){
+   if (enemyAmount[2]<5 && enemyAmount[8]<4){
+    spawnInArea(2,5,new int[]{45,0},0,7);
+    spawnInArea(8,2,new int[]{37,-8},0,4);
+    spawnInArea(8,1,new int[]{37,8},0,4);
+    spawnInArea(9,1,new int[]{45,0},0,10);
+
+    spawnInArea(2,5,new int[]{-45,0},0,7);
+    spawnInArea(8,2,new int[]{-37,-8},0,4);
+    spawnInArea(8,1,new int[]{-37,8},0,4);
+    spawnInArea(9,1,new int[]{-45,0},0,10);
+
+    spawnInArea(2,5,new int[]{0,45},0,7);
+    spawnInArea(8,2,new int[]{-8,37},0,4);
+    spawnInArea(8,1,new int[]{8,37},0,4);
+    spawnInArea(9,1,new int[]{0,45},0,10);
+
+    spawnInArea(2,5,new int[]{0,-45},0,7);
+    spawnInArea(8,2,new int[]{-8,-37},0,4);
+    spawnInArea(8,1,new int[]{8,-37},0,4);
+    spawnInArea(9,1,new int[]{0,-45},0,10);
    }
   }
-  if (enemyAmount[8]<1){
-   while (failsafe<10){
+ }
+
+ public void spawnInArea(int type, int number, int[] target, int innerareaside, int areaside){ //spawns whatever enemy in a (square) donut around target
+  int failsafe=0;
+  int positivex = 0;
+  int positivey = 0;
+  for(int i=0; i<number; i++){
+   while(failsafe<10){
     positivex=1;
     positivey=1;
     if (Math.random()>.5){
@@ -152,23 +210,7 @@ public class Board extends JPanel implements ActionListener{
     if (Math.random()>.5){
      positivey=-1;
     }
-    if (spawnSpecific(2, new int[]{(int)(Math.random()*20*positivex+0+(4*positivex)), (int)(Math.random()*20*positivey+0+(4*positivey))})){
-     failsafe=0;
-     break;
-    } else {
-     failsafe++;
-    }
-   }
-   while (failsafe<10){
-    positivex=1;
-    positivey=1;
-    if (Math.random()>.5){
-     positivex=-1;
-    }
-    if (Math.random()>.5){
-     positivey=-1;
-    }
-    if (spawnSpecific(2, new int[]{(int)(Math.random()*25*positivex+0+(4*positivex)), (int)(Math.random()*25*positivey+0+(4*positivey))})){
+    if (spawnSpecific(type, new int[]{(int)(Math.random()*(areaside-innerareaside)*positivex+target[0]+innerareaside*positivex),(int)(Math.random()*(areaside-innerareaside)*positivey+target[1]+innerareaside*positivey)})){
      failsafe=0;
      break;
     } else {
@@ -183,25 +225,21 @@ public class Board extends JPanel implements ActionListener{
    if (Math.abs(target[0]-allies.get(i).position[0])<=allies.get(i).radius && Math.abs(target[1]-allies.get(i).position[1])<=allies.get(i).radius){
     return false;
    }
-   /*if (allies.get(i).position[0]==target[0] && allies.get(i).position[1]==target[1]){
-    return false;
-   }*/
   }
-  for (int i=0; i<enemies.size(); i++){
+  /*for (int i=0; i<enemies.size(); i++){
    if (enemies.get(i).position[0]==target[0] && enemies.get(i).position[1]==target[1]){
     return false;
    }
-  }
+  }*/
   if (Math.abs(target[0]-player.position[0])<6 && Math.abs(target[1]-player.position[1])<6){
    return false;
   }
-  /*if (player.position[0]==target[0] && player.position[1]==target[1]){
-   return false;
-  }*/
-  if (type==1){ //goblin
+  if (type==2){ //goblin
    enemies.add(new Goblin(this, target[0], target[1]));
-  } else if (type==2){ //goblinarcher
+  } else if (type==8){ //goblinarcher
    enemies.add(new GoblinArcher(this, target[0], target[1]));
+  } else if (type==9){ //raider
+   enemies.add(new Raider(this, target[0], target[1]));
   }
   return true;
  }
@@ -285,6 +323,122 @@ public class Board extends JPanel implements ActionListener{
     }
    }
   }
+  drawUI(g);
+  tutorial.draw(g);
+ }
+
+ public void drawUI(Graphics g){
+  Dimension size = getSize();
+  int height = (int)size.getHeight();
+  int width = (int)size.getWidth();
+  //making outline of mini-map
+  int minimapside=200;
+  if (width<1100 || height<600){
+   minimapside=100;
+  }
+  Color color = new Color(100,100,100);
+  g.setColor(color.brighter());
+  g.drawLine(width-minimapside-7,height-minimapside-7,width-1,height-minimapside-7);
+  g.drawLine(width-minimapside-7,height-minimapside-7,width-minimapside-7,height-1);
+  g.drawLine(width-minimapside-5,height-3,width-3,height-3);
+  g.drawLine(width-3,height-minimapside-5,width-3,height-3);
+  g.setColor(color);
+  g.drawLine(width-minimapside-6,height-minimapside-6,width-2,height-minimapside-6);
+  g.drawLine(width-minimapside-6,height-minimapside-6,width-minimapside-6,height-2);
+  g.drawLine(width-minimapside-6,height-2,width-2,height-2);
+  g.drawLine(width-2,height-minimapside-6,width-2,height-2);
+  g.setColor(color.darker());
+  g.drawLine(width-minimapside-5,height-minimapside-5,width-3,height-minimapside-5);
+  g.drawLine(width-minimapside-5,height-minimapside-5,width-minimapside-5,height-3);
+  g.drawLine(width-minimapside-6,height-1,width-1,height-1);
+  g.drawLine(width-1,height-minimapside-6,width-1,height-1);
+  //fill in mini-map
+  color = new Color(10,10,10);
+  g.setColor(color);
+  g.fillRect(width-minimapside-4,height-minimapside-4,minimapside+1,minimapside+1);
+  //place dots where player/allies/enemies are
+  int[] position = new int[2];
+  int[] difference = new int[2];
+  color = new Color(200,30,30);
+  g.setColor(color);
+  for (int i=0; i<enemies.size(); i++){
+   difference[0]=enemies.get(i).position[0]-player.position[0];
+   difference[1]=enemies.get(i).position[1]-player.position[1];
+   if (difference[0]<minimapside/4-1 && difference[0]>-minimapside/4-2 && difference[1]<minimapside/4-1 && difference[1]>-minimapside/4-2){
+    g.fillRect(width-2-minimapside/2+2*difference[0],height-2-minimapside/2+2*difference[1],2,2);    
+   }
+  }
+  color = new Color(30,185,30);
+  Color wcolor = new Color(125,125,125);
+  for (int i=0; i<allies.size(); i++){
+   difference[0]=allies.get(i).position[0]-player.position[0];
+   difference[1]=allies.get(i).position[1]-player.position[1];
+   if (difference[0]<minimapside/4-1 && difference[0]>-minimapside/4-2 && difference[1]<minimapside/4-1 && difference[1]>-minimapside/4-2){
+    if (allies.get(i).name.equals("Wall") || allies.get(i).name.equals("Rock")){
+     g.setColor(wcolor);
+     g.fillRect(width-2-minimapside/2+2*difference[0],height-2-minimapside/2+2*difference[1],2,2);
+    } else {
+     g.setColor(color);
+     g.fillRect(width-2-minimapside/2+2*difference[0],height-2-minimapside/2+2*difference[1],2,2);
+    }
+   }
+  }
+  color = new Color(15,15,200);
+  g.setColor(color.brighter());
+  g.fillRect(width-2-minimapside/2,height-2-minimapside/2,2,2);
+
+  //Ally Bar
+  color = new Color(100,100,100);
+  g.setColor(color);
+       //288 long
+  int halfwidth = width-minimapside-350;
+  if (width>=615){
+   halfwidth=width/2-144;
+  }
+  g.drawLine(halfwidth,height-25,halfwidth+288,height-25);
+  g.drawLine(halfwidth,height-1,halfwidth+288,height-1);
+  g.drawLine(halfwidth,height-25,halfwidth,height-1);
+  g.drawLine(halfwidth+288,height-25,halfwidth+288,height-1);
+  int separation = 0;
+  int increment = 24;
+  for (int i=0; i<12; i++){
+   g.setColor(color);
+   g.drawLine(halfwidth+separation,height-25,halfwidth+separation,height-1);
+   if (player.gold>=stats.allyCosts(i)){
+    g.setColor(new Color(150,150,150));
+    g.fillRect(halfwidth+1+separation,height-24,23,23);    
+   } else {
+    g.setColor(new Color(25,25,25));
+    g.fillRect(halfwidth+1+separation,height-24,23,23);
+   }
+   if (i==0){
+    drawSquare(g,halfwidth+2+separation,height-23,3,3,0);
+   } else if (i==1){
+    drawSquare(g,halfwidth+2+separation,height-23,6,3,0);
+   } else if (i==2){
+    drawSquare(g,halfwidth+2+separation,height-23,4,3,0);
+   } else if (i==3){
+    drawSquare(g,halfwidth+2+separation,height-23,5,3,0);
+   } else if (i==4){
+    drawSquare(g,halfwidth+2+separation,height-23,7,3,0);
+   }
+   if (parent.allyChoice==i){
+    g.setColor(new Color(204,204,204));
+    g.drawRect(halfwidth+2+separation-1,height-24,22,22);
+    g.drawRect(halfwidth+2+separation,height-23,20,20);
+   }
+   separation=separation+increment;
+  }
+
+  //write cost of thing over ally bar
+  try{
+   cost.drawCost(g,halfwidth,height);
+  } catch (Exception e){
+  }
+  /*//write stats on top-leftnew
+  color = new Color(0,0,0)
+  g.setColor(color);
+  */
  }
 
  public void drawSquare(Graphics g, int x, int y, int type, int direction, int attack){
@@ -404,7 +558,7 @@ public class Board extends JPanel implements ActionListener{
    } catch (IOException e){
    }
   }
-  if (type==8){
+  if (type==8){ //GoblinArcher
    try {
     if (direction==1){
      img = ImageIO.read(new File("pictures/GoblinArcherUp.png"));
@@ -418,6 +572,23 @@ public class Board extends JPanel implements ActionListener{
     g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
     img = null;
    } catch (IOException e){
+   }
+  }
+  if (type==9){ //Raider
+   try {
+    if (direction==1){
+     img = ImageIO.read(new File("pictures/RaiderUp.png"));
+    } else if (direction==2){
+     img = ImageIO.read(new File("pictures/RaiderRight.png"));
+    } else if (direction==3){
+     img = ImageIO.read(new File("pictures/RaiderDown.png"));
+    } else if (direction==4){
+     img = ImageIO.read(new File("pictures/RaiderLeft.png"));
+    }
+    g.drawImage(img,x,y,squareWidth(),squareHeight(),null);
+    img = null;
+   } catch (IOException e){
+    System.out.println("darn");
    }
   }
   if (type==0){
@@ -596,10 +767,35 @@ public class Board extends JPanel implements ActionListener{
    int keycode = e.getKeyCode();
    int keychar = e.getKeyChar();
    if (!isStarted){
-    return;
+    if (keycode==KeyEvent.VK_ESCAPE){
+     tutorial.end();
+     return;
+    }
+    //return;
    }
    if (keycode==KeyEvent.VK_TAB){
     parent.allyMenu();
+   }
+   if (keychar=='q' || keychar=='Q'){
+    parent.allyChoice=parent.allyChoice-1;
+    if (parent.allyChoice<0){
+     parent.allyChoice=4;
+    }
+    try{
+     cost.timer.stop();
+    } catch(Exception ex){
+    }
+    cost = new Cost(parent.board);
+   } else if (keychar=='r' || keychar=='R'){
+    parent.allyChoice=parent.allyChoice+1;
+    if (parent.allyChoice>4){
+     parent.allyChoice=0;
+    }
+    try{
+     cost.timer.stop();
+    } catch(Exception ex){
+    }
+    cost = new Cost(parent.board);
    }
    if (keychar=='p' || keychar=='P' || keycode==KeyEvent.VK_ESCAPE){
     pause();
@@ -634,9 +830,9 @@ public class Board extends JPanel implements ActionListener{
     player.tryMove(4,false);
    } else if (keychar==' '){
     player.interact();
-   } else if (keychar=='q'){
+   } else if (keychar=='e'){
     place();
-   } else if (keychar=='Q'){
+   } else if (keychar=='E'){
     remove();
    }
    switch (keycode){

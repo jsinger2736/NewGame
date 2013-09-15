@@ -13,7 +13,7 @@ public class FootSoldier extends Mob{
   gold=parent.stats.footsoldiermaxgold;
   parent=parenti;
   type=4;
-  radius=6;
+  radius=5;
   name="FootSoldier";
   timer=new Timer(parent.stats.footsoldierspeed,this);
   timer.start();

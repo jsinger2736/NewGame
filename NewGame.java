@@ -31,6 +31,7 @@ public class NewGame extends JFrame{
   add(board);
   setJMenuBar(menubar);
   setSize(board.boardWidth*21,board.boardHeight*21+30);
+  setExtendedState(JFrame.MAXIMIZED_BOTH);
   setTitle("NewGame");
   setDefaultCloseOperation(EXIT_ON_CLOSE);
  }
@@ -43,7 +44,7 @@ public class NewGame extends JFrame{
   NewGame game = new NewGame();
   game.setLocationRelativeTo(null);
   game.setVisible(true);
-  game.board.start();
+  //game.board.start();
  }
 
  public void allyMenu(){

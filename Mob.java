@@ -1,6 +1,7 @@
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+import java.util.ArrayList;
 
 public class Mob implements ActionListener{
  Board parent;
@@ -19,6 +20,9 @@ public class Mob implements ActionListener{
  int lastMove = 3;
  int stab=0;
  boolean counter = false;
+ int[] phantomPosition = new int[2];
+ ArrayList<Integer> tempPath = new ArrayList<Integer>();
+ ArrayList<Integer> path = new ArrayList<Integer>();
  
  public Mob(Board parenti, int x, int y){
   position[0]=x;

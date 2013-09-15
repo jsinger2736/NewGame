@@ -3,6 +3,7 @@ import java.awt.*;
 import javax.swing.*;
 
 public class Player extends Mob{
+ int value = 0;
 
  public Player(Board parenti, int x, int y){
   super(parenti, x, y);
@@ -21,6 +22,15 @@ public class Player extends Mob{
    stab=0;
   }
   timer.stop();
+ }
+
+ public void calculateValue(){
+  value = gold;
+  for (int i=0; i<parent.allies.size(); i++){
+   if (!parent.allies.get(i).name.equals("Wall") && !parent.allies.get(i).name.equals("Rock")){
+    value = value+parent.stats.cost(parent.allies.get(i).type);
+   }
+  }
  }
 
  public void tryMove(int direction, boolean move){
