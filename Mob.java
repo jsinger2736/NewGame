@@ -23,6 +23,7 @@ public class Mob implements ActionListener{
  int[] phantomPosition = new int[2];
  ArrayList<Integer> tempPath = new ArrayList<Integer>();
  ArrayList<Integer> path = new ArrayList<Integer>();
+ double extravalue;
  
  public Mob(Board parenti, int x, int y){
   position[0]=x;
@@ -45,6 +46,10 @@ public class Mob implements ActionListener{
    return 3;
   } else if (nameo.equals("Bowman")){
    return 4;
+  } else if (nameo.equals("Knight")){
+   return 5;
+  } else if (nameo.equals("Hunter")){
+   return 6;
   } else {
    return 0;
   }

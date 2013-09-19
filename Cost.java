@@ -55,6 +55,18 @@ public class Cost implements ActionListener{
    g.setColor(tcolor);
    g.drawRect(halfwidth+choice*24,height-45,44,18);
    g.drawString("40 gold",halfwidth+choice*24+2,height-31);
+  } else if (choice==5){
+   g.setColor(fcolor);
+   g.fillRect(halfwidth+choice*24+1,height-44,53,17);
+   g.setColor(tcolor);
+   g.drawRect(halfwidth+choice*24,height-45,54,18);
+   g.drawString("100 gold",halfwidth+choice*24+2,height-31);
+  } else if (choice==6){
+   g.setColor(fcolor);
+   g.fillRect(halfwidth+choice*24+1,height-44,53,17);
+   g.setColor(tcolor);
+   g.drawRect(halfwidth+choice*24,height-45,54,18);
+   g.drawString("100 gold",halfwidth+choice*24+2,height-31);
   }
  }
 

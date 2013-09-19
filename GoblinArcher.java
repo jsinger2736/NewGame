@@ -224,8 +224,8 @@ public class GoblinArcher extends Mob{
    target[1]=position[1];
   }
   lastMove=direction;
-  for (int i=0; i<parent.allies.size(); i++){
-   if (parent.allies.get(i).position[0]==target[0] && parent.allies.get(i).position[1]==target[1]){
+  for (int i=0; i<parent.enemies.size(); i++){
+   if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
     return false;
    }
   }

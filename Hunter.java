@@ -2,25 +2,25 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class FootSoldier extends Mob{
+public class Hunter extends Mob{
 
- public FootSoldier(Board parenti, int x, int y){
+ public Hunter(Board parenti, int x, int y){
   super(parenti, x, y);
   position[0]=x;
   position[1]=y;
-  origin[0]=x;
-  origin[1]=y;
-  gold=parent.stats.footsoldiermaxgold;
+  origin[0]=0;
+  origin[1]=0;
+  gold=parent.stats.huntermaxgold;
   parent=parenti;
-  type=4;
-  radius=5;
-  name="FootSoldier";
-  timer=new Timer(parent.stats.footsoldierspeed,this);
+  type=14;
+  radius=20;
+  name="Hunter";
+  timer=new Timer(parent.stats.hunterspeed,this);
   timer.start();
  }
 
  public void actionPerformed(ActionEvent e){
-  timer.setDelay(parent.stats.footsoldierspeed);
+  timer.setDelay(parent.stats.hunterspeed);
   if (stab!=0){
    stab=0;
   }
@@ -54,17 +54,17 @@ public class FootSoldier extends Mob{
   }
   for (int i=0; i<parent.enemies.size(); i++){
    if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
-    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.footsoldierdamage;
-    parent.player.gold=parent.player.gold+parent.stats.footsoldierdamage;
+    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.hunterdamage;
+    parent.player.gold=parent.player.gold+parent.stats.hunterdamage;
    }
   }
  }
 
  public void regenerate(){
   regeneration++;
-  if (regeneration>=parent.stats.footsoldierregenerate){
+  if (regeneration>=parent.stats.hunterregenerate){
    regeneration=0;
-   if (gold<parent.stats.footsoldiermaxgold){
+   if (gold<parent.stats.huntermaxgold){
     gold++;
    }
   }
@@ -75,19 +75,23 @@ public class FootSoldier extends Mob{
   int yChange = radius;
   int tempxChange = 500;
   int tempyChange = 500;
+  int playerxDistance;
+  int playeryDistance;
   for (int i=0; i<parent.enemies.size(); i++){
    //if (parent.enemies.get(i).name.equals("Wall") || parent.allies.get(i).name.equals("Rock")){
    // continue;
    //}
    tempxChange=parent.enemies.get(i).position[0]-position[0];
    tempyChange=parent.enemies.get(i).position[1]-position[1];
-   if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
+   playerxDistance=parent.enemies.get(i).position[0]-parent.player.position[0];
+   playeryDistance=parent.enemies.get(i).position[1]-parent.player.position[1];
+   if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange) && Math.sqrt(playerxDistance*playerxDistance+playeryDistance*playeryDistance)<=radius/2){
     xChange=tempxChange;
     yChange=tempyChange;
    }
   }
   if (xChange==radius && yChange==radius){
-   return new int[]{origin[0],origin[1]};
+   return new int[]{parent.player.position[0],parent.player.position[1]};
   }
   return new int[]{position[0]+xChange,position[1]+yChange};
  }
@@ -96,19 +100,22 @@ public class FootSoldier extends Mob{
   int[] direction = {1,2,3,4};
   int xChange = target[0]-position[0];
   int yChange = target[1]-position[1];
-  if (xChange==1 && yChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  if (Math.abs(xChange)+Math.abs(yChange)==1 && target[0]==parent.player.position[0] && target[1]==parent.player.position[1]){
+   return;
+  }
+  if (xChange==1 && yChange==0){// && !(target[0]==parent.player.position[0] && target[1]==parent.player.position[1])){
    lastMove=2;
    interact();
-  } else if (xChange==-1 && yChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  } else if (xChange==-1 && yChange==0){// && !(target[0]==parent.player.position[0] && target[1]==parent.player.position[1])){
    lastMove=4;
    interact();
-  } else if (yChange==1 && xChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  } else if (yChange==1 && xChange==0){// && !(target[0]==parent.player.position[0] && target[1]==parent.player.position[1])){
    lastMove=3;
    interact();
-  } else if (yChange==-1 && xChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  } else if (yChange==-1 && xChange==0){// && !(target[0]==parent.player.position[0] && target[1]==parent.player.position[1])){
    lastMove=1;
    interact();
-  } else if (!(target[0]==position[0] && target[1]==position[1] && position[0]==origin[0] && position[1]==origin[1])){
+  } else if (!(target[0]==position[0] && target[1]==position[1])){// && position[0]==parent.player.position[0] && position[1]==parent.player.position[1])){
    if (xChange>0 && yChange<0){
     if (Math.random()>.5){
      direction = new int[]{1,2,4,3};
@@ -202,7 +209,6 @@ public class FootSoldier extends Mob{
  }
 
 }
-
 
 
 

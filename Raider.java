@@ -12,7 +12,7 @@ public class Raider extends Mob{
   position[1]=y;
   origin[0]=x;
   origin[1]=y;
-  gold = 10;
+  gold = parent.stats.raidermaxgold;
   parent=parenti;
   type=9;
   //regenerate=24;
@@ -118,10 +118,8 @@ public class Raider extends Mob{
    tempxChange=parent.player.position[0]-position[0];
    tempyChange=parent.player.position[1]-position[1];
    if (found){
-    System.out.println("EY");
     if (Math.abs(tempxChange)+Math.abs(tempyChange)==1){
      target = new int[]{position[0]+tempxChange,position[1]+tempyChange};
-     System.out.println("YO "+target[0]+","+target[1]);
     }
    } else {
     if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
@@ -150,11 +148,119 @@ public class Raider extends Mob{
    }
    target = new int[]{position[0]+xChange,position[1]+yChange};
   }
-  System.out.println(target[0]+","+target[1]);
   return target;
  }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
  public void tryMove(int[] target){
+  int[] direction = {1,2,3,4};
+  int xChange = target[0]-position[0];
+  int yChange = target[1]-position[1];
+  if (xChange==1 && yChange==0){
+   lastMove=2;
+   interact();
+  } else if (xChange==-1 && yChange==0){
+   lastMove=4;
+   interact();
+  } else if (yChange==1 && xChange==0){
+   lastMove=3;
+   interact();
+  } else if (yChange==-1 && xChange==0){
+   lastMove=1;
+   interact();
+  } else {
+   if (xChange>0 && yChange<0){
+    if (Math.random()>.5){
+     direction = new int[]{1,2,4,3};
+    } else {
+     direction = new int[]{2,1,3,4};
+    }
+   } else if (xChange>0 && yChange>0){
+    if (Math.random()>.5){
+     direction = new int[]{2,3,1,4};
+    } else {
+     direction = new int[]{3,2,4,1};
+    }
+   } else if (xChange<0 && yChange<0){
+    if (Math.random()>.5){
+     direction = new int[]{1,4,2,3};
+    } else {
+     direction = new int[]{4,1,3,2};
+    }
+   } else if (xChange<0 && yChange>0){
+    if (Math.random()>.5){
+     direction = new int[]{4,3,1,2};
+    } else {
+     direction = new int[]{3,4,2,1};
+    }
+   } else if (xChange>0){
+    if (Math.random()>.5){
+     direction = new int[]{2,1,3,4};
+    } else {
+     direction = new int[]{2,3,1,4};
+    }
+   } else if (xChange<0){
+    if (Math.random()>.5){
+     direction = new int[]{4,1,3,2};
+    } else {
+     direction = new int[]{4,3,1,2};
+    }
+   } else if (yChange<0){
+    if (Math.random()>.5){
+     direction = new int[]{1,2,4,3};
+    } else {
+     direction = new int[]{1,4,2,3};
+    }
+   } else if (yChange>0){
+    if (Math.random()>.5){
+     direction = new int[]{3,2,4,1};
+    } else {
+     direction = new int[]{3,4,2,1};
+    }
+   }
+   int temp;
+   for (int i=0; i<4; i++){
+    if (attempt(direction[i])){
+     break;
+    }
+   }
+  }
+ }
+
+ public boolean attempt(int direction){
+  int[] target = new int[2];
+  if (direction==1){
+   target[0]=position[0];
+   target[1]=position[1]-1;
+  } else if (direction==2){
+   target[0]=position[0]+1;
+   target[1]=position[1];
+  } else if (direction==3){
+   target[0]=position[0];
+   target[1]=position[1]+1;
+  } else if (direction==4){
+   target[0]=position[0]-1;
+   target[1]=position[1];
+  }
+  lastMove=direction;
+  for (int i=0; i<parent.enemies.size(); i++){
+   if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
+    return false;
+   }
+  }
+  for (int i=0; i<parent.allies.size(); i++){
+   if (parent.allies.get(i).position[0]==target[0] && parent.allies.get(i).position[1]==target[1]){
+    return false;
+   }
+  }
+  if (parent.player.position[0]==target[0] && parent.player.position[1]==target[1]){
+   return false;
+  }
+  position[0]=target[0];
+  position[1]=target[1];
+  return true;
+ }
+
+/* public void tryMove(int[] target){
   int xChange = target[0]-position[0];
   int yChange = target[1]-position[1];
   if (xChange==1 && yChange==0){
@@ -175,10 +281,10 @@ public class Raider extends Mob{
    return;
   }
   path = new ArrayList<Integer>();
-  for (int i=0; i<500; i++){
+  for (int i=0; i<400; i++){
    path.add(0);
   }
-  for (int i=0; i<50; i++){
+  for (int i=0; i<40; i++){
    pathSeek(target);
   }
   try {
@@ -191,8 +297,7 @@ public class Raider extends Mob{
   if (position[0]==target[0] && position[1]==target[1]){
    path.add(0,3);
   }
-  if (path.size()>=495){
-   System.out.println("LOOOOOOOOOP");
+  if (path.size()>=395){
    stupidity++;
    if (stupidity<4){
     tryMove(home(false));
@@ -223,7 +328,7 @@ public class Raider extends Mob{
   tempPath = new ArrayList<Integer>();
   phantomPosition[0]=position[0];
   phantomPosition[1]=position[1];
-  for (int k=1; k<500; k++){
+  for (int k=1; k<400; k++){
    int[] direction = {1,2,3,4};
    int xChange = target[0]-phantomPosition[0];
    int yChange = target[1]-phantomPosition[1];
@@ -309,10 +414,6 @@ public class Raider extends Mob{
      break;
     }
    }
-   /*if (phantomPosition[0]==target[0] && phantomPosition[1]==target[1]){
-    System.out.println("GOTCHA");
-    break;
-   }*/
    if (Math.abs(target[0]-phantomPosition[0])+Math.abs(target[1]-phantomPosition[1])<=1){
     break;
    }
@@ -353,6 +454,6 @@ public class Raider extends Mob{
   phantomPosition[0]=target[0];
   phantomPosition[1]=target[1];
   return true;
- }
- /////////////////////////////////////////////////////////////////////////////////////////////
+ }*/
+
 }

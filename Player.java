@@ -27,8 +27,11 @@ public class Player extends Mob{
  public void calculateValue(){
   value = gold;
   for (int i=0; i<parent.allies.size(); i++){
-   if (!parent.allies.get(i).name.equals("Wall") && !parent.allies.get(i).name.equals("Rock")){
+   if (!parent.allies.get(i).name.equals("Wall") && !parent.allies.get(i).name.equals("Rock") && !parent.allies.get(i).name.equals("King")){
     value = value+parent.stats.cost(parent.allies.get(i).type);
+   } else if (parent.allies.get(i).name.equals("King")){
+    value = value+(int)parent.allies.get(i).extravalue;
+   } else {
    }
   }
  }

@@ -74,6 +74,9 @@ public class Arrow extends Projectile{
   if (allegiance==1){ //good guys
    for (int i=0; i<parent.enemies.size(); i++){
     if (parent.enemies.get(i).position[0]==position[0] && parent.enemies.get(i).position[1]==position[1]){
+     if (parent.enemies.get(i).name.equals("Ghost") && Math.random()>.25){
+      continue;
+     }
      parent.enemies.get(i).gold=parent.enemies.get(i).gold-damage;
      parent.player.gold=parent.player.gold+damage;
      dead=true;

@@ -10,7 +10,7 @@ public class Goblin extends Mob{
   position[1]=y;
   origin[0]=x;
   origin[1]=y;
-  gold = 5;
+  gold = parent.stats.goblinmaxgold;
   //maxgold = 5;
   parent=parenti;
   type=2;

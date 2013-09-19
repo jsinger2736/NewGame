@@ -2,25 +2,25 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class FootSoldier extends Mob{
+public class Knight extends Mob{
 
- public FootSoldier(Board parenti, int x, int y){
+ public Knight(Board parenti, int x, int y){
   super(parenti, x, y);
   position[0]=x;
   position[1]=y;
   origin[0]=x;
   origin[1]=y;
-  gold=parent.stats.footsoldiermaxgold;
+  gold=parent.stats.knightmaxgold;
   parent=parenti;
-  type=4;
-  radius=5;
-  name="FootSoldier";
-  timer=new Timer(parent.stats.footsoldierspeed,this);
+  type=12;
+  radius=6;
+  name="Knight";
+  timer=new Timer(parent.stats.knightspeed,this);
   timer.start();
  }
 
  public void actionPerformed(ActionEvent e){
-  timer.setDelay(parent.stats.footsoldierspeed);
+  timer.setDelay(parent.stats.knightspeed);
   if (stab!=0){
    stab=0;
   }
@@ -54,17 +54,17 @@ public class FootSoldier extends Mob{
   }
   for (int i=0; i<parent.enemies.size(); i++){
    if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
-    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.footsoldierdamage;
-    parent.player.gold=parent.player.gold+parent.stats.footsoldierdamage;
+    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.knightdamage;
+    parent.player.gold=parent.player.gold+parent.stats.knightdamage;
    }
   }
  }
 
  public void regenerate(){
   regeneration++;
-  if (regeneration>=parent.stats.footsoldierregenerate){
+  if (regeneration>=parent.stats.knightregenerate){
    regeneration=0;
-   if (gold<parent.stats.footsoldiermaxgold){
+   if (gold<parent.stats.knightmaxgold){
     gold++;
    }
   }

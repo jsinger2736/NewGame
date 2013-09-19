@@ -6,7 +6,7 @@ import javax.swing.*;
 public class NewGame extends JFrame{
  JMenuBar menubar;
  JMenu file, options;
- JMenuItem exit, allychoice;
+ JMenuItem newgame, exit, allychoice;
  JLabel statusbar;
  Board board;
  MenuHandler menuhandler;
@@ -16,8 +16,11 @@ public class NewGame extends JFrame{
   menubar = new JMenuBar();
   menuhandler = new MenuHandler();
   file = new JMenu("File");
+  newgame = new JMenuItem("New Game");
+  newgame.addActionListener(menuhandler);
   exit = new JMenuItem("Exit");
   exit.addActionListener(menuhandler);
+  file.add(newgame);
   file.add(exit);
   menubar.add(file);
   options = new JMenu("Options");
@@ -51,12 +54,14 @@ public class NewGame extends JFrame{
   if (!board.isPaused){
    board.pause();
   }
-  Object[] list = new Object[5];
+  Object[] list = new Object[7];
   list[0]="Wall";
   list[1]="Rock";
   list[2]="FootSoldier";
   list[3]="Peasant";
   list[4]="Bowman";
+  list[5]="Knight";
+  list[6]="Hunter";
   try{
    String choice = JOptionPane.showInputDialog(null,"Choose the ally you'd like to spawn.","Choice of Ally",JOptionPane.PLAIN_MESSAGE,null,list,list[allyChoice]).toString();
    allyChoice = Mob.allyIdentifier(choice);
@@ -74,6 +79,9 @@ public class NewGame extends JFrame{
  public class MenuHandler implements ActionListener{
   public void actionPerformed(ActionEvent e){
    Object source = e.getSource();
+   if (source==newgame){
+    board.restart();
+   }
    if (source==exit){
     System.exit(0);
    }

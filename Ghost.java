@@ -2,37 +2,38 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class FootSoldier extends Mob{
+public class Ghost extends Mob{
 
- public FootSoldier(Board parenti, int x, int y){
+ public Ghost(Board parenti, int x, int y){
   super(parenti, x, y);
   position[0]=x;
   position[1]=y;
   origin[0]=x;
   origin[1]=y;
-  gold=parent.stats.footsoldiermaxgold;
+  gold = parent.stats.ghostmaxgold;
+  //maxgold = 5;
   parent=parenti;
-  type=4;
-  radius=5;
-  name="FootSoldier";
-  timer=new Timer(parent.stats.footsoldierspeed,this);
+  type=11;
+  //regenerate=24;
+  //damage=1;
+  name="Ghost";
+  timer = new Timer(parent.stats.ghostspeed,this);
   timer.start();
  }
 
  public void actionPerformed(ActionEvent e){
-  timer.setDelay(parent.stats.footsoldierspeed);
   if (stab!=0){
    stab=0;
   }
   if (gold<=0){
    timer.stop();
-   parent.allies.remove(this);
+   parent.enemies.remove(this);
    return;
   }
   regenerate();
   counter = !counter;
   if (counter){
-   tryMove(home());
+   tryMove(home(true));
   }
  }
 
@@ -52,63 +53,119 @@ public class FootSoldier extends Mob{
    target[0]=position[0]-1;
    target[1]=position[1];
   }
-  for (int i=0; i<parent.enemies.size(); i++){
-   if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
-    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.footsoldierdamage;
-    parent.player.gold=parent.player.gold+parent.stats.footsoldierdamage;
+  if (parent.player.position[0]==target[0] && parent.player.position[1]==target[1]){
+   parent.player.gold=parent.player.gold-parent.stats.ghostdamage;
+  }
+  for (int i=0; i<parent.allies.size(); i++){
+   if (parent.allies.get(i).position[0]==target[0] && parent.allies.get(i).position[1]==target[1]){
+    parent.allies.get(i).gold=parent.allies.get(i).gold-parent.stats.ghostdamage;
    }
   }
  }
 
  public void regenerate(){
   regeneration++;
-  if (regeneration>=parent.stats.footsoldierregenerate){
+  if (regeneration>=parent.stats.ghostregenerate){
    regeneration=0;
-   if (gold<parent.stats.footsoldiermaxgold){
+   if (gold<parent.stats.ghostmaxgold){
     gold++;
    }
   }
  }
 
- public int[] home(){
-  int xChange = radius;
-  int yChange = radius;
+ public int[] home(boolean search){
+  int xChange = 500;
+  int yChange = 500;
   int tempxChange = 500;
   int tempyChange = 500;
-  for (int i=0; i<parent.enemies.size(); i++){
-   //if (parent.enemies.get(i).name.equals("Wall") || parent.allies.get(i).name.equals("Rock")){
-   // continue;
-   //}
-   tempxChange=parent.enemies.get(i).position[0]-position[0];
-   tempyChange=parent.enemies.get(i).position[1]-position[1];
+  int[] target = new int[]{1,1};
+  boolean found = false;
+  if (search){
+   for (int i=0; i<parent.allies.size(); i++){
+    if (!parent.allies.get(i).name.equals("Bowman")){
+     continue;
+    }
+    tempxChange=parent.allies.get(i).position[0]-position[0];
+    tempyChange=parent.allies.get(i).position[1]-position[1];
+    if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
+      xChange=tempxChange;
+     yChange=tempyChange;
+    }
+   }
+   if (xChange!=500 || yChange!=500){
+    target = new int[]{position[0]+xChange,position[1]+yChange};
+    found = true;
+   }
+   for (int i=0; i<parent.allies.size(); i++){
+    if (parent.allies.get(i).name.equals("Wall") || parent.allies.get(i).name.equals("Rock")){
+     continue;
+    }
+    tempxChange=parent.allies.get(i).position[0]-position[0];
+    tempyChange=parent.allies.get(i).position[1]-position[1];
+    if (found){
+     if (Math.abs(tempxChange)+Math.abs(tempyChange)==1){
+      target = new int[]{position[0]+tempxChange,position[1]+tempyChange};
+     }
+    } else {
+     if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
+      xChange=tempxChange;
+      yChange=tempyChange;
+     }
+    }
+   }
+   tempxChange=parent.player.position[0]-position[0];
+   tempyChange=parent.player.position[1]-position[1];
+   if (found){
+    if (Math.abs(tempxChange)+Math.abs(tempyChange)==1){
+     target = new int[]{position[0]+tempxChange,position[1]+tempyChange};
+    }
+   } else {
+    if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
+     xChange=tempxChange;
+     yChange=tempyChange;
+    }
+    target = new int[]{position[0]+xChange,position[1]+yChange};
+   }
+  } else {
+   for (int i=0; i<parent.allies.size(); i++){
+    if (parent.allies.get(i).name.equals("Wall") || parent.allies.get(i).name.equals("Rock")){
+     continue;
+    }
+    tempxChange=parent.allies.get(i).position[0]-position[0];
+    tempyChange=parent.allies.get(i).position[1]-position[1];
+    if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
+     xChange=tempxChange;
+     yChange=tempyChange;
+    }
+   }
+   tempxChange=parent.player.position[0]-position[0];
+   tempyChange=parent.player.position[1]-position[1];
    if (Math.sqrt(tempxChange*tempxChange+tempyChange*tempyChange)<Math.sqrt(xChange*xChange+yChange*yChange)){
     xChange=tempxChange;
     yChange=tempyChange;
    }
+   target = new int[]{position[0]+xChange,position[1]+yChange};
   }
-  if (xChange==radius && yChange==radius){
-   return new int[]{origin[0],origin[1]};
-  }
-  return new int[]{position[0]+xChange,position[1]+yChange};
+  return target;
  }
 
  public void tryMove(int[] target){
   int[] direction = {1,2,3,4};
   int xChange = target[0]-position[0];
   int yChange = target[1]-position[1];
-  if (xChange==1 && yChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  if (xChange==1 && yChange==0){
    lastMove=2;
    interact();
-  } else if (xChange==-1 && yChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  } else if (xChange==-1 && yChange==0){
    lastMove=4;
    interact();
-  } else if (yChange==1 && xChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  } else if (yChange==1 && xChange==0){
    lastMove=3;
    interact();
-  } else if (yChange==-1 && xChange==0 && !(target[0]==origin[0] && target[1]==origin[1])){
+  } else if (yChange==-1 && xChange==0){
    lastMove=1;
    interact();
-  } else if (!(target[0]==position[0] && target[1]==position[1] && position[0]==origin[0] && position[1]==origin[1])){
+  } else {
    if (xChange>0 && yChange<0){
     if (Math.random()>.5){
      direction = new int[]{1,2,4,3};
@@ -183,7 +240,7 @@ public class FootSoldier extends Mob{
    target[1]=position[1];
   }
   lastMove=direction;
-  for (int i=0; i<parent.enemies.size(); i++){
+  /*for (int i=0; i<parent.enemies.size(); i++){
    if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
     return false;
    }
@@ -195,14 +252,13 @@ public class FootSoldier extends Mob{
   }
   if (parent.player.position[0]==target[0] && parent.player.position[1]==target[1]){
    return false;
-  }
+  }*/
   position[0]=target[0];
   position[1]=target[1];
   return true;
  }
 
 }
-
 
 
 

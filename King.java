@@ -2,36 +2,41 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class FootSoldier extends Mob{
+public class King extends Mob{
 
- public FootSoldier(Board parenti, int x, int y){
+ public King(Board parenti, int x, int y){
   super(parenti, x, y);
   position[0]=x;
   position[1]=y;
   origin[0]=x;
   origin[1]=y;
-  gold=parent.stats.footsoldiermaxgold;
+  gold=parent.stats.kingmaxgold;
   parent=parenti;
-  type=4;
-  radius=5;
-  name="FootSoldier";
-  timer=new Timer(parent.stats.footsoldierspeed,this);
+  type=13;
+  radius=1;
+  name="King";
+  timer=new Timer(parent.stats.kingspeed,this);
   timer.start();
+  extravalue=0;
  }
 
  public void actionPerformed(ActionEvent e){
-  timer.setDelay(parent.stats.footsoldierspeed);
+  timer.setDelay(parent.stats.kingspeed);
   if (stab!=0){
    stab=0;
   }
   if (gold<=0){
    timer.stop();
-   parent.allies.remove(this);
+   //parent.allies.remove(this);
+   parent.kingIsDed();
    return;
   }
   regenerate();
   counter = !counter;
   if (counter){
+   if (parent.isStarted){
+    extravalue=extravalue+.2;
+   }
    tryMove(home());
   }
  }
@@ -54,17 +59,17 @@ public class FootSoldier extends Mob{
   }
   for (int i=0; i<parent.enemies.size(); i++){
    if (parent.enemies.get(i).position[0]==target[0] && parent.enemies.get(i).position[1]==target[1]){
-    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.footsoldierdamage;
-    parent.player.gold=parent.player.gold+parent.stats.footsoldierdamage;
+    parent.enemies.get(i).gold=parent.enemies.get(i).gold-parent.stats.kingdamage;
+    parent.player.gold=parent.player.gold+parent.stats.kingdamage;
    }
   }
  }
 
  public void regenerate(){
   regeneration++;
-  if (regeneration>=parent.stats.footsoldierregenerate){
+  if (regeneration>=parent.stats.kingregenerate){
    regeneration=0;
-   if (gold<parent.stats.footsoldiermaxgold){
+   if (gold<parent.stats.kingmaxgold){
     gold++;
    }
   }
@@ -202,8 +207,6 @@ public class FootSoldier extends Mob{
  }
 
 }
-
-
 
 
 
